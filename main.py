@@ -13,7 +13,7 @@ from bleak.backends.characteristic import BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 
-from msg_processing import process_press_temp_data
+from msg_processing import process_press_temp_data, process_acc_data, process_gyro_data
 
 DEVICE_NAME = "gait_001"
 
@@ -46,10 +46,10 @@ def end_saved_msg():
 
     if last_msg["type"] == 0x00:
         print("ACC_DATA")
-        #TODO: process accelerometer data
+        process_acc_data(last_msg)
     elif last_msg["type"] == 0x01:
         print("GYRO_DATA")
-        #TODO process gyroscope data
+        process_gyro_data(last_msg)
     elif last_msg["type"] == 0x02:
         print("PRESS_TEMP_DATA")
         process_press_temp_data(last_msg)

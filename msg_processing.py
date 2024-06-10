@@ -62,8 +62,13 @@ def process_press_temp_data(msg: dict):
     
     number_of_frames = msg["data_len"] // TEMP_PRESS_FRAME_SIZE
 
+    end_time = msg["timestamp"]
+    start_time = end_time - msg["data_period_ms"] * (number_of_frames - 1)
+
     for i in range(number_of_frames):
-        timestamp = msg["timestamp"]
+
+        timestamp = start_time + i * msg["data_period_ms"]
+        
         pressure = int.from_bytes(msg["data"][i * TEMP_PRESS_FRAME_SIZE:i * TEMP_PRESS_FRAME_SIZE + PRESS_VALUE_SIZE], byteorder='little')
         temperature = int.from_bytes(msg["data"][i * TEMP_PRESS_FRAME_SIZE + PRESS_VALUE_SIZE:i * TEMP_PRESS_FRAME_SIZE + TEMP_PRESS_FRAME_SIZE], byteorder='little')
 
@@ -86,8 +91,11 @@ def process_acc_data(msg: dict):
     
     number_of_frames = msg["data_len"] // ACC_FRAME_SIZE
 
+    end_time = msg["timestamp"]
+    start_time = end_time - msg["data_period_ms"] * (number_of_frames - 1)
+
     for i in range(number_of_frames):
-        timestamp = msg["timestamp"]
+        timestamp = start_time + i * msg["data_period_ms"]
         acc_x = int.from_bytes(msg["data"][i * ACC_FRAME_SIZE:i * ACC_FRAME_SIZE + ACC_VALUE_SIZE], byteorder='little')
         acc_y = int.from_bytes(msg["data"][i * ACC_FRAME_SIZE + ACC_VALUE_SIZE:i * ACC_FRAME_SIZE + 2 * ACC_VALUE_SIZE], byteorder='little')
         acc_z = int.from_bytes(msg["data"][i * ACC_FRAME_SIZE + 2 * ACC_VALUE_SIZE:i * ACC_FRAME_SIZE + ACC_FRAME_SIZE], byteorder='little')
@@ -112,8 +120,11 @@ def process_gyro_data(msg: dict):
     
     number_of_frames = msg["data_len"] // GYRO_FRAME_SIZE
 
+    end_time = msg["timestamp"]
+    start_time = end_time - msg["data_period_ms"] * (number_of_frames - 1)
+
     for i in range(number_of_frames):
-        timestamp = msg["timestamp"]
+        timestamp = start_time + i * msg["data_period_ms"]
         gyro_x = int.from_bytes(msg["data"][i * GYRO_FRAME_SIZE:i * GYRO_FRAME_SIZE + GYRO_VALUE_SIZE], byteorder='little')
         gyro_y = int.from_bytes(msg["data"][i * GYRO_FRAME_SIZE + GYRO_VALUE_SIZE:i * GYRO_FRAME_SIZE + 2 * GYRO_VALUE_SIZE], byteorder='little')
         gyro_z = int.from_bytes(msg["data"][i * GYRO_FRAME_SIZE + 2 * GYRO_VALUE_SIZE:i * GYRO_FRAME_SIZE + GYRO_FRAME_SIZE], byteorder='little')

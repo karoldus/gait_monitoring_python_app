@@ -21,7 +21,7 @@ UART_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
 UART_RX_CHAR_UUID = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
 UART_TX_CHAR_UUID = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
-BLE_MSG_HEADER_SIZE = 13
+BLE_MSG_HEADER_SIZE = 15
 
 MSG_TYPES = {
     0x00: "ACC_DATA",
@@ -34,13 +34,14 @@ last_msg = { # made iit class
     "current_part": None,
     "total_parts": None,
     "timestamp": None,
+    "data_period_ms": None,
     "data_len": None,
     "data": None,
     "ended": True
 }
 
 def end_saved_msg():
-    print("Processing message type: ", MSG_TYPES[last_msg["type"]], ", timestamp: ", last_msg["timestamp"], ", data_len: ", last_msg["data_len"])
+    print("Processing message type: ", MSG_TYPES[last_msg["type"]], ", timestamp: ", last_msg["timestamp"], ", data_period_ms: ", last_msg["data_period_ms"], ", data_len: ", last_msg["data_len"])
     # print("Data: ", last_msg["data"])
     last_msg["ended"] = True
 
@@ -70,16 +71,17 @@ def process_data(data: bytes):
     current_part = data[1]
     total_parts = data[2]
     timestamp = int.from_bytes(data[3:11], byteorder='little')
-    data_len = int.from_bytes(data[11:13], byteorder='little')
+    data_period_ms = int.from_bytes(data[11:13], byteorder='little')
+    data_len = int.from_bytes(data[13:15], byteorder='little')
 
     if msg_type not in MSG_TYPES:
         print("Invalid message type: ", msg_type)
         return
     
-    print("Received message type: ", MSG_TYPES[msg_type], " part ", current_part, " of ", total_parts, ", timestamp: ", timestamp, ", data_len: ", data_len)
+    print("Received message type: ", MSG_TYPES[msg_type], " part ", current_part, " of ", total_parts, ", timestamp: ", timestamp, ", data_period_ms: ", data_period_ms, ", data_len: ", data_len)
 
     if len(data) != BLE_MSG_HEADER_SIZE + data_len:
-        print("Invalid message size: ", len(data) + " expected: ", BLE_MSG_HEADER_SIZE + data_len)
+        print("Invalid message size: ", len(data), " expected: ", BLE_MSG_HEADER_SIZE + data_len)
         return
     
     if last_msg["ended"]:
@@ -87,17 +89,19 @@ def process_data(data: bytes):
         last_msg["current_part"] = current_part
         last_msg["total_parts"] = total_parts
         last_msg["timestamp"] = timestamp
+        last_msg["data_period_ms"] = data_period_ms
         last_msg["data_len"] = data_len
         last_msg["data"] = data[BLE_MSG_HEADER_SIZE:]
         last_msg["ended"] = False
     else:
-        if last_msg["type"] != msg_type or last_msg["current_part"] + 1 != current_part or last_msg["total_parts"] != total_parts or last_msg["timestamp"] != timestamp:
-            print("Invalid message. Expected: ", last_msg["type"], " part ", last_msg["current_part"] + 1, " of ", last_msg["total_parts"], ", timestamp: ", last_msg["timestamp"])
+        if last_msg["type"] != msg_type or last_msg["current_part"] + 1 != current_part or last_msg["total_parts"] != total_parts or last_msg["timestamp"] != timestamp or last_msg["data_period_ms"] != data_period_ms:
+            print("Invalid message. Expected: ", last_msg["type"], " part ", last_msg["current_part"] + 1, " of ", last_msg["total_parts"], ", timestamp: ", last_msg["timestamp"], ", data_period_ms: ", last_msg["data_period_ms"])
             print("Discarding old message and starting new one")
             last_msg["type"] = msg_type
             last_msg["current_part"] = current_part
             last_msg["total_parts"] = total_parts
             last_msg["timestamp"] = timestamp
+            last_msg["data_period_ms"] = data_period_ms
             last_msg["data_len"] = data_len
             last_msg["data"] = data[BLE_MSG_HEADER_SIZE:]
             last_msg["ended"] = False

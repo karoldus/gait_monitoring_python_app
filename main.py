@@ -15,13 +15,13 @@ from bleak.backends.scanner import AdvertisementData
 
 from msg_processing import process_press_temp_data, process_acc_data, process_gyro_data
 
-DEVICE_NAME = "gait_001"
+DEVICE_NAME = "gait_monitor"
 
 UART_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
 UART_RX_CHAR_UUID = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
 UART_TX_CHAR_UUID = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
-BLE_MSG_HEADER_SIZE = 15
+BLE_MSG_HEADER_SIZE = 14
 
 MSG_TYPES = {
     0x00: "ACC_DATA",
@@ -72,7 +72,7 @@ def process_data(data: bytes):
     total_parts = data[2]
     timestamp = int.from_bytes(data[3:11], byteorder='little')
     data_period_ms = int.from_bytes(data[11:13], byteorder='little')
-    data_len = int.from_bytes(data[13:15], byteorder='little')
+    data_len = data[13]#int.from_bytes(data[13], byteorder='little')
 
     if msg_type not in MSG_TYPES:
         print("Invalid message type: ", msg_type)

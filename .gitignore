@@ -161,3 +161,6 @@ cython_debug/
 
 data/*
 !data/.gitkeep
+analyze/*.csv
+analyze/*/*.csv
+analyze/*/*.png
